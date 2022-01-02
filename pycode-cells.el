@@ -23,9 +23,18 @@
   (interactive)
   (progn
     (pycode-cells-go-end)
-    (evil-open-below 1)
+    (+default/newline-below)
     (insert (format "%s" pycode-cells-delimiter))
-    (evil-open-above 1)))
+    (+default/newline-above)))
+
+(defun pycode-cells-add-above ()
+  "Create a new cell above the current cell."
+  (interactive)
+  (progn
+    (pycode-cells-go-start)
+    (+default/newline-above)
+    (insert (format "%s" pycode-cells-delimiter))
+    (+default/newline-below)))
 
 (defun pycode-cells-find-cell-start ()
   "Search backword from the cursor position until cell start or buffer start is found."
@@ -50,9 +59,16 @@
     (buffer-substring-no-properties start end)))
 
 (defun pycode-cells-send-cell ()
-  "Find the current cell text and send to the python shel for execution."
+  "Send to the python shel for execution."
   (interactive)
   (python-shell-send-string (pycode-cells-get-cell-text) nil t))
+
+(defun pycode-cells-send-cell-add ()
+  "Send to the python shel for execution."
+  (interactive)
+  (progn
+    (pycode-cells-send-cell)            ;; TODO exec below only if this is successful
+    (pycode-cells-add-below)))
 
 (provide 'pycode-cells)
 ;;; pycode-cells.el ends here
