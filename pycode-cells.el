@@ -6,23 +6,38 @@
 ;;; Code:
 (defvar pycode-cells-delimiter "#%%")
 
+
 (defun pycode-cells-go-start ()
-  "TODO."
-  (evil-ex-search-full-pattern pycode-cells-delimiter 1 'backward)
-  ;; TODO return buffer beginning if no match
-  (point))
+  "Go to the cell start; if none, go to the buffer beginning."
+  (let* (
+         (result (search-forward pycode-cells-delimiter
+                        nil
+                        t
+                        -1))
+         (pos (if (equal result nil)
+                  (point-min)
+                result)))
+    (goto-char pos)))
+
 
 (defun pycode-cells-go-end ()
-  "TODO."
-  (evil-ex-search-full-pattern pycode-cells-delimiter 1 'forward)
-  ;; TODO return buffer end if no match
-  (point))
+  "Go to the cell end; if none, go to the buffer end."
+  (let* (
+         (result (search-forward pycode-cells-delimiter
+                        nil
+                        t
+                        1))
+         (pos (if (equal result nil)
+                  (point-max)
+                result)))
+    (goto-char pos)))
+
 
 (defun pycode-cells-add-below ()
   "Create a new cell below the current cell."
   (interactive)
   (progn
-    (pycode-cells-go-end)
+    (pycode-cells-go-end) ;; FIXME add delimiter to last cell if missing
     (+default/newline-below)
     (insert (format "%s" pycode-cells-delimiter))
     (+default/newline-above)))
@@ -31,7 +46,7 @@
   "Create a new cell above the current cell."
   (interactive)
   (progn
-    (pycode-cells-go-start)
+    (pycode-cells-go-start) ;; FIXME add delimiter to first cell if missing
     (+default/newline-above)
     (insert (format "%s" pycode-cells-delimiter))
     (+default/newline-below)))
@@ -69,6 +84,21 @@
   (progn
     (pycode-cells-send-cell)            ;; TODO exec below only if this is successful
     (pycode-cells-add-below)))
+
+(defun pycode-cells-go-above ()
+  "Move the cursor to the first line of the cell above."
+  (interactive)
+  (progn
+    (pycode-cells-go-start)
+    (pycode-cells-go-start)
+    (forward-line)))
+
+(defun pycode-cells-go-below ()
+  "Move the cursor to the first line of the cell below."
+  (interactive)
+  (progn
+    (pycode-cells-go-end)
+    (forward-line)))
 
 (provide 'pycode-cells)
 ;;; pycode-cells.el ends here
