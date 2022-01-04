@@ -1,5 +1,5 @@
-;;; package --- Allows splittin python files into cells, each is executable in a python shell
-
+;;; package --- Allows splittin python files into cells. Each code cell can be sent to
+;;; a python process for execution.
 
 ;;; Commentary:
 
