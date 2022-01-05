@@ -6,50 +6,30 @@
 ;;; Code:
 (defvar pycode-cells-delimiter "#%%")
 
-
 (defun pycode-cells-go-start ()
   "Go to the cell start; if none, go to the buffer beginning."
   (let* (
-         (result (search-forward pycode-cells-delimiter
-                        nil
-                        t
-                        -1))
-         (pos (if (equal result nil)
-                  (point-min)
-                result)))
+         (result (search-forward pycode-cells-delimiter nil t -1))
+         (pos (if (equal result nil) (point-min) result)))
     (goto-char pos)))
-
 
 (defun pycode-cells-go-end ()
   "Go to the cell end; if none, go to the buffer end."
   (let* (
-         (result (search-forward pycode-cells-delimiter
-                        nil
-                        t
-                        1))
-         (pos (if (equal result nil)
-                  (point-max)
-                result)))
+         (result (search-forward pycode-cells-delimiter nil t 1))
+         (pos (if (equal result nil) (point-max) result)))
     (goto-char pos)))
 
+(defun pycode-cells-require-delimiter (up)
+  "Add cell delimiter below/above current line if missing depending on the value of UP."
+  (if (not (pycode-cells-line-has-delimiter?))
+      (progn
+        (if up (+default/newline-above) (+default/newline-below))
+        (insert (format "%s" pycode-cells-delimiter)))))
 
-(defun pycode-cells-add-below ()
-  "Create a new cell below the current cell."
-  (interactive)
-  (progn
-    (pycode-cells-go-end) ;; FIXME add delimiter to last cell if missing
-    (+default/newline-below)
-    (insert (format "%s" pycode-cells-delimiter))
-    (+default/newline-above)))
-
-(defun pycode-cells-add-above ()
-  "Create a new cell above the current cell."
-  (interactive)
-  (progn
-    (pycode-cells-go-start) ;; FIXME add delimiter to first cell if missing
-    (+default/newline-above)
-    (insert (format "%s" pycode-cells-delimiter))
-    (+default/newline-below)))
+(defun pycode-cells-line-has-delimiter? ()
+  "Return the pos of delilimiter in the current line, nil if the delimiter is missing."
+  (string-match-p pycode-cells-delimiter (thing-at-point 'line)))
 
 (defun pycode-cells-find-cell-start ()
   "Search backword from the cursor position until cell start or buffer start is found."
@@ -73,13 +53,33 @@
         (end (pycode-cells-find-cell-end)))
     (buffer-substring-no-properties start end)))
 
+(defun pycode-cells-add-below ()
+  "Create a new cell below the current cell."
+  (interactive)
+  (progn
+    (pycode-cells-go-end)
+    (pycode-cells-require-delimiter nil)
+    (+default/newline-below)
+    (insert (format "%s" pycode-cells-delimiter))
+    (+default/newline-above)))
+
+(defun pycode-cells-add-above ()
+  "Create a new cell above the current cell."
+  (interactive)
+  (progn
+    (pycode-cells-go-start)
+    (pycode-cells-require-delimiter t)
+    (+default/newline-above)
+    (insert (format "%s" pycode-cells-delimiter))
+    (+default/newline-below)))
+
 (defun pycode-cells-send-cell ()
   "Send to the python shel for execution."
   (interactive)
   (python-shell-send-string (pycode-cells-get-cell-text) nil t))
 
 (defun pycode-cells-send-cell-add ()
-  "Send to the python shel for execution."
+  "Send to the python shel for execution then add a new cell below."
   (interactive)
   (progn
     (pycode-cells-send-cell)            ;; TODO exec below only if this is successful
