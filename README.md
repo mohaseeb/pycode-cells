@@ -1,5 +1,5 @@
 # pycode-cells
-A minimal "jupyter notebook"-like experience on Emacs. 
+A minimal "jupyter notebook"-like experience on Emacs. This package allows you to split your regular python file into "code cells" that you can execute individually in a python shell process.
 ![pycode-cells-demo](./pycode-cells-demo.gif)
 
 ## Installation
