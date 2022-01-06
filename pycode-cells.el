@@ -74,12 +74,12 @@
     (+default/newline-below)))
 
 (defun pycode-cells-send-cell ()
-  "Send to the python shel for execution."
+  "Send to the python process for execution."
   (interactive)
   (python-shell-send-string (pycode-cells-get-cell-text) nil t))
 
 (defun pycode-cells-send-cell-add ()
-  "Send to the python shel for execution then add a new cell below."
+  "Send to the python process for execution then add a new cell below."
   (interactive)
   (progn
     (pycode-cells-send-cell)            ;; TODO exec below only if this is successful
