@@ -20,11 +20,11 @@
          (pos (if (equal result nil) (point-max) result)))
     (goto-char pos)))
 
-(defun pycode-cells-require-delimiter (up)
-  "Add cell delimiter below/above current line if missing depending on the value of UP."
+(defun pycode-cells-require-delimiter (add-above?)
+  "Add cell delimiter below/above current line if missing depending on the value of ADD-ABOVE?."
   (if (not (pycode-cells-line-has-delimiter?))
       (progn
-        (if up (+default/newline-above) (+default/newline-below))
+        (if add-above? (+default/newline-above) (+default/newline-below))
         (insert (format "%s" pycode-cells-delimiter)))))
 
 (defun pycode-cells-line-has-delimiter? ()
@@ -78,12 +78,24 @@
   (interactive)
   (python-shell-send-string (pycode-cells-get-cell-text) nil t))
 
-(defun pycode-cells-send-cell-add ()
+(defun pycode-cells-send-cell-then-go-below ()
   "Send to the python process for execution then add a new cell below."
   (interactive)
   (progn
     (pycode-cells-send-cell)            ;; TODO exec below only if this is successful
-    (pycode-cells-add-below)))
+    (pycode-cells-go-below)
+    (pycode-cells-make-cell-if-not)))
+
+(defun pycode-cells-make-cell-if-not()
+  "Ensure the region from current poisition until the end of buffer consitites a cell."
+  (save-excursion
+   (progn
+     (if (equal (point) (point-max)) (save-excursion (+default/newline-below)))
+     (if (equal nil (search-forward pycode-cells-delimiter nil t 1))
+         (progn
+           (goto-char (- (point-max) 1))
+           (pycode-cells-require-delimiter nil))))))
+
 
 (defun pycode-cells-go-above ()
   "Move the cursor to the first line of the cell above."
